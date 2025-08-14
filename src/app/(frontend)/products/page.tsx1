@@ -1,0 +1,127 @@
+import type { Metadata } from 'next/types'
+import { PageRange } from '@/components/PageRange'
+import { Pagination } from '@/components/Pagination'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
+import React from 'react'
+import PageClient from './page.client'
+import { ProductCollectionArchive } from '@/components/ProductCollectionArchive'
+import { Content } from '@/blocks/Content/config'
+import { FormBlock } from '@/blocks/Form/Component'
+
+export const dynamic = 'force-static'
+export const revalidate = 600
+
+export default async function Page() {
+  const payload = await getPayload({ config: configPromise })
+
+  const residentialProducts = await payload.find({
+    collection: 'products',
+    depth: 1,
+    sort: ['Content.squareFootage'],
+    limit: 12,
+    where: {
+      'Content.projectType': {
+        equals: 'residential',
+      },
+    },
+    overrideAccess: false,
+    select: {
+      title: true,
+      Content: true,
+      slug: true,
+    },
+  })
+
+  const commercialProducts = await payload.find({
+    collection: 'products',
+    depth: 1,
+    limit: 12,
+    where: {
+      'Content.projectType': {
+        equals: 'commercial',
+      },
+    },
+    overrideAccess: false,
+    select: {
+      title: true,
+      Content: true,
+      slug: true,
+    },
+  })
+
+  const formResult = await payload.find({
+    collection: 'forms',
+    depth: 1,
+    where: {
+      title: {
+        equals: 'Contact Nord House 1',
+      },
+    },
+    overrideAccess: false,
+  })
+
+  const form = formResult.docs[0]
+
+  return (
+    <div className="pb-24 pt-24">
+      <PageClient />
+      <div className="container mb-16">
+        <div className="prose max-w-none dark:prose-invert">
+          <h2>Residential Projects</h2>
+        </div>
+      </div>
+
+      {/*<div className="container mb-8">*/}
+      {/*  <PageRange*/}
+      {/*    collection="posts"*/}
+      {/*    currentPage={products.page}*/}
+      {/*    limit={12}*/}
+      {/*    totalDocs={products.totalDocs}*/}
+      {/*  />*/}
+      {/*</div>*/}
+
+      <ProductCollectionArchive products={residentialProducts.docs} />
+
+      <div className="container my-16">
+        <div className="prose max-w-none dark:prose-invert">
+          <h2>Commercial Projects</h2>
+        </div>
+      </div>
+
+      <ProductCollectionArchive products={commercialProducts.docs} />
+
+      {/*<div className="container">*/}
+      {/*  {products.totalPages > 1 && products.page && (*/}
+      {/*    <Pagination page={products.page} totalPages={products.totalPages} />*/}
+      {/*  )}*/}
+      {/*</div>*/}
+
+      <div className="container mt-40">
+        <div
+          className={
+            'prose mb-12 flex max-w-none flex-row items-center gap-x-16 md:prose-md lg:prose-lg dark:prose-invert'
+          }
+        >
+          <div className={'flex-1'}>
+            <h3>Let’s implement your project together</h3>
+          </div>
+          <div className={'flex-1'}>
+            <p className={'text-foregroundSecondary'}>
+              Ready to take the first step? Leave your details, and we’ll provide a personalized
+              quote tailored to your vision.
+            </p>
+          </div>
+        </div>
+        {/*@ts-expect-error*/}
+        <FormBlock enableIntro={false} form={form!} />
+      </div>
+    </div>
+  )
+}
+
+export function generateMetadata(): Metadata {
+  return {
+    title: `NordHouse Posts`,
+  }
+}

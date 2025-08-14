@@ -1,0 +1,75 @@
+import type { Field } from 'payload'
+
+import {
+  BlocksFeature,
+  FixedToolbarFeature,
+  HeadingFeature,
+  InlineToolbarFeature,
+  lexicalEditor,
+} from '@payloadcms/richtext-lexical'
+
+import { linkGroup } from '@/fields/linkGroup'
+import { defaultLexical } from '@/fields/defaultLexical'
+
+export const hero: Field = {
+  name: 'hero',
+  type: 'group',
+  fields: [
+    {
+      name: 'type',
+      type: 'select',
+      defaultValue: 'lowImpact',
+      label: 'Type',
+      options: [
+        {
+          label: 'None',
+          value: 'none',
+        },
+        {
+          label: 'High Impact',
+          value: 'highImpact',
+        },
+        {
+          label: 'Medium Impact',
+          value: 'mediumImpact',
+        },
+        {
+          label: 'Low Impact',
+          value: 'lowImpact',
+        },
+      ],
+      required: true,
+    },
+    {
+      name: 'richText',
+      type: 'richText',
+      editor: defaultLexical,
+      label: false,
+    },
+    {
+      name: 'richText2',
+      type: 'richText',
+      admin: {
+        condition: (_, { type } = {}) => ['mediumImpact'].includes(type),
+      },
+      editor: defaultLexical,
+      label: false,
+    },
+    linkGroup({
+      appearances: ['ghost', 'default', 'outline'],
+      overrides: {
+        maxRows: 2,
+      },
+    }),
+    {
+      name: 'media',
+      type: 'upload',
+      admin: {
+        condition: (_, { type } = {}) => ['highImpact', 'mediumImpact'].includes(type),
+      },
+      relationTo: 'media',
+      required: true,
+    },
+  ],
+  label: false,
+}
